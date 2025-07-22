@@ -1,3 +1,5 @@
+<img width="1024" height="1024" alt="ChatGPT Image Jul 22, 2025, 02_41_57 PM" src="https://github.com/user-attachments/assets/bfe2210f-9b31-4efb-906d-76591146ed63" />
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
