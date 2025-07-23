@@ -13,9 +13,12 @@ interface MapSelectorProps {
 
 const MapSelector: React.FC<MapSelectorProps> = ({ location, onLocationChange }) => {
   const [manualLocation, setManualLocation] = useState('');
-  
+  const [manualLat, setManualLat] = useState<number>(location.lat);
+  const [manualLng, setManualLng] = useState<number>(location.lng);
+
   const handleMapClick = (e: React.MouseEvent) => {
-    // In a real app, this would convert coordinates to a location
+    e.preventDefault();
+    
     const newLocation = {
       lat: location.lat + (Math.random() - 0.5) * 5,
       lng: location.lng + (Math.random() - 0.5) * 5,
@@ -36,15 +39,14 @@ const MapSelector: React.FC<MapSelectorProps> = ({ location, onLocationChange })
   
   const handleManualLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (manualLocation.trim()) {
-      const newLocation = {
-        lat: location.lat + (Math.random() - 0.5) * 10,
-        lng: location.lng + (Math.random() - 0.5) * 10,
-        name: manualLocation
-      };
-      onLocationChange(newLocation);
-      setManualLocation('');
-    }
+    const newLocation = {
+      lat: manualLat,
+      lng: manualLng,
+      name: manualLocation || `(${manualLat.toFixed(3)}, ${manualLng.toFixed(3)})`
+    };
+    
+    onLocationChange(newLocation);
+    setManualLocation('');
   };
 
   return (
@@ -75,8 +77,24 @@ const MapSelector: React.FC<MapSelectorProps> = ({ location, onLocationChange })
         
         <form onSubmit={handleManualLocationSubmit} className="manual-location">
           <input 
-            type="text" 
-            placeholder="Enter city or ZIP code" 
+            type="number"
+            step="any"
+            placeholder="Latitude"
+            value={manualLat}
+            onChange={(e) => setManualLat(parseFloat(e.target.value))}
+            required
+          />
+          <input 
+            type="number"
+            step="any"
+            placeholder="Longitude"
+            value={manualLng}
+            onChange={(e) => setManualLng(parseFloat(e.target.value))}
+            required
+          />
+          <input 
+            type="text"
+            placeholder="Location name (optional)"
             value={manualLocation}
             onChange={(e) => setManualLocation(e.target.value)}
           />

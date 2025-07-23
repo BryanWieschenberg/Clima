@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface WeatherData {
   temp: number;
@@ -11,6 +11,8 @@ interface WeatherData {
 
 interface Location {
   name: string;
+  lat: number;
+  lng: number;
 }
 
 interface WeatherCardProps {
@@ -19,7 +21,35 @@ interface WeatherCardProps {
   isLoading: boolean;
 }
 
-const WeatherCard: React.FC<WeatherCardProps> = ({ weatherData, location, isLoading }) => {
+const WeatherCard: React.FC<WeatherCardProps> = ({ location, isLoading: parentLoading }) => {
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [isLoading, setIsLoading] = useState(parentLoading);
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/weather?lat=${location.lat}&lng=${location.lng}`);
+        const data = await res.json();
+        setWeatherData({
+          temp: data.high,
+          feelsLike: data.feelsLike,
+          condition: data.condition,
+          humidity: data.humidity,
+          wind: data.wind,
+          hourly: data.hourly ?? undefined
+        });
+      } catch (err) {
+        console.error('Failed to fetch weather:', err);
+        setWeatherData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWeather();
+  }, [location]);
+  
   if (isLoading || !weatherData) {
     return (
       <div className="card weather-card loading">

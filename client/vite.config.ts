@@ -7,4 +7,12 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  server: {
+      proxy: {
+          '/weather': {
+              target: 'http://localhost:8080',
+              changeOrigin: true,
+          },
+      },
+  },
 })
