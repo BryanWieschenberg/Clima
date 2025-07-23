@@ -11,14 +11,26 @@ interface MapSelectorProps {
   onLocationChange: (location: Location) => void;
 }
 
+async function getLatLonFromCityState(city: string, state: string) {
+    const query = `${city}, ${state}`;
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+
+    if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        return { lat, lng: lon };
+    } else {
+        throw new Error("Location not found");
+    }
+}
+
 const MapSelector: React.FC<MapSelectorProps> = ({ location, onLocationChange }) => {
-  const [manualLocation, setManualLocation] = useState('');
-  const [manualLat, setManualLat] = useState<number>(location.lat);
-  const [manualLng, setManualLng] = useState<number>(location.lng);
+  const [manualCity, setManualCity] = useState('');
+  const [manualState, setManualState] = useState('');
 
   const handleMapClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    
     const newLocation = {
       lat: location.lat + (Math.random() - 0.5) * 5,
       lng: location.lng + (Math.random() - 0.5) * 5,
@@ -28,7 +40,6 @@ const MapSelector: React.FC<MapSelectorProps> = ({ location, onLocationChange })
   };
   
   const handleGeoLocate = () => {
-    // Simulate geolocation
     const newLocation = {
       lat: 51.5074 + (Math.random() - 0.5) * 0.1,
       lng: -0.1278 + (Math.random() - 0.5) * 0.1,
@@ -37,16 +48,21 @@ const MapSelector: React.FC<MapSelectorProps> = ({ location, onLocationChange })
     onLocationChange(newLocation);
   };
   
-  const handleManualLocationSubmit = (e: React.FormEvent) => {
+  const handleManualLocationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newLocation = {
-      lat: manualLat,
-      lng: manualLng,
-      name: manualLocation || `(${manualLat.toFixed(3)}, ${manualLng.toFixed(3)})`
-    };
-    
-    onLocationChange(newLocation);
-    setManualLocation('');
+    try {
+        const { lat, lng } = await getLatLonFromCityState(manualCity, manualState);
+        const newLocation = {
+            lat,
+            lng,
+            name: `${manualCity}, ${manualState}`
+        };
+        onLocationChange(newLocation);
+        setManualCity('');
+        setManualState('');
+    } catch (error) {
+        alert('Location not found. Try again.');
+    }
   };
 
   return (
@@ -75,30 +91,29 @@ const MapSelector: React.FC<MapSelectorProps> = ({ location, onLocationChange })
         
         <div className="or-divider">OR</div>
         
-        <form onSubmit={handleManualLocationSubmit} className="manual-location">
+        <form 
+          onSubmit={handleManualLocationSubmit} 
+          className="manual-location flex flex-col sm:flex-row items-center justify-center gap-2 mt-4 px-4 w-full"
+        >
           <input 
-            type="number"
-            step="any"
-            placeholder="Latitude"
-            value={manualLat}
-            onChange={(e) => setManualLat(parseFloat(e.target.value))}
-            required
-          />
-          <input 
-            type="number"
-            step="any"
-            placeholder="Longitude"
-            value={manualLng}
-            onChange={(e) => setManualLng(parseFloat(e.target.value))}
-            required
+            type="text"
+            placeholder="City"
+            value={manualCity}
+            onChange={(e) => setManualCity(e.target.value)}
+            className="rounded-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-1/2"
           />
           <input 
             type="text"
-            placeholder="Location name (optional)"
-            value={manualLocation}
-            onChange={(e) => setManualLocation(e.target.value)}
+            placeholder="State/Country"
+            value={manualState}
+            onChange={(e) => setManualState(e.target.value)}
+            required
+            className="rounded-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-1/2"
           />
-          <button type="submit">
+          <button 
+            type="submit"
+            className="rounded-full bg-blue-500 text-white px-4 py-2 hover:bg-blue-600 transition w-full sm:w-auto"
+          >
             <i className="fa-solid fa-magnifying-glass"></i>
           </button>
         </form>
