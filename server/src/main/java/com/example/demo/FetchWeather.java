@@ -38,15 +38,29 @@ public class FetchWeather {
             JsonNode humidities = root.at("/hourly/relativehumidity_2m");
             JsonNode winds = root.at("/hourly/windspeed_10m");
 
-            LocalDate today = LocalDate.now();
+            String todayDate = java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC).toLocalDate().toString();
             double maxToday = Double.NEGATIVE_INFINITY;
+            System.out.println("Today (UTC): " + todayDate);
+            System.out.println("First time in array: " + times.get(0).asText());
             String condition = "Unknown";
             double humidity = 0;
             double wind = 0;
+            String targetDate = todayDate;
+            boolean foundToday = false;
 
             for (int i = 0; i < times.size(); i++) {
                 String timeStr = times.get(i).asText();
-                if (timeStr.startsWith(today.toString())) {
+
+                if (!foundToday && timeStr.startsWith(todayDate)) {
+                    targetDate = todayDate;
+                    foundToday = true;
+                } else if (!foundToday) {
+                    // fallback to date of first available data
+                    targetDate = timeStr.substring(0, 10);
+                    foundToday = true;
+                }
+
+                if (timeStr.startsWith(targetDate)) {
                     double temp = temps.get(i).asDouble();
                     if (temp > maxToday) {
                         maxToday = temp;

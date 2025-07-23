@@ -94,13 +94,13 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ location, isLoading: parentLo
       <div className="weather-content">
         <div className="main-weather">
           <div className="temperature">
-            {weatherData.temp}°C
+            {(weatherData.feelsLike * 9/5 + 32).toFixed(0)}°F
           </div>
           <div className="weather-condition">
             {weatherData.condition}
           </div>
           <div className="feels-like">
-            Feels like {weatherData.feelsLike}°C
+            Feels like {(weatherData.feelsLike * 9/5 + 32).toFixed(0)}°F
           </div>
         </div>
         
